@@ -1,16 +1,16 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up Python
@@ -23,11 +23,48 @@ jobs:
         sudo apt update
         sudo apt install -y \
           openjdk-17-jdk \
-          zip unzip \
-          libffi-dev libssl-dev \
-          libbz2-dev liblzma-dev \
-          libsqlite3-dev zlib1g-dev \
-          libncurses6
+          zip \
+          unzip \
+          git \
+          libffi-dev \
+          libssl-dev \
+          libncurses6 \
+          libncurses-dev \
+          zlib1g-dev \
+          libbz2-dev \
+          libreadline-dev \
+          libsqlite3-dev \
+          libjpeg-dev \
+          libpng-dev \
+          libfreetype6-dev \
+          pkg-config \
+          cmake
+
+    - name: Install Android SDK command-line tools
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip commandlinetools-linux-*.zip
+        mv cmdline-tools cmdline-tools/latest
+
+    - name: Set Android SDK environment
+      run: |
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
+    - name: Accept Android SDK licenses
+      run: |
+        yes | sdkmanager --licenses
+
+    - name: Install Android SDK components
+      run: |
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-33" \
+          "build-tools;36.1.0"
 
     - name: Install Buildozer
       run: |
@@ -41,5 +78,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: GCMCY-Loadmaster-APK
+        name: apk
         path: bin/*.apk
