@@ -26,6 +26,7 @@ jobs:
           zip \
           unzip \
           git \
+          wget \
           libffi-dev \
           libssl-dev \
           libncurses6 \
@@ -40,12 +41,13 @@ jobs:
           pkg-config \
           cmake
 
-    - name: Install Android SDK command-line tools
+    - name: Install Android SDK command-line tools (clean, idempotent)
       run: |
+        rm -rf $HOME/android-sdk
         mkdir -p $HOME/android-sdk/cmdline-tools/latest
         cd $HOME/android-sdk
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip commandlinetools-linux-*.zip
+        unzip -q commandlinetools-linux-*.zip
         mv cmdline-tools/* cmdline-tools/latest/
         rm -rf cmdline-tools
 
